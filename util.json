@@ -1,0 +1,64 @@
+{
+    "exhuast_fan_node_names": [
+        "n001_zone_38",
+        "n001_zone_39",
+        "n001_zone_40",
+        "n001_zone_41",
+        "N Bath Fan",
+        "S Bath Fan"
+    ],
+    "supply_fan_node_names": [
+        "n001_output_33",
+        "53 23 84 1",
+        "53 25 DA 1"
+    ],
+    "exhuast_fans": {
+        "n001_zone_38": {
+            "name": "VentaHood L1",
+            "cfm": 200,
+            "type": "bool"
+        },
+        "n001_zone_39": {
+            "name": "VentaHood L2",
+            "cfm": 400,
+            "type": "bool"
+        },
+        "n001_zone_40": {
+            "name": "VentaHood L3",
+            "cfm": 300,
+            "type": "bool"
+        },
+        "n001_zone_41": {
+            "name": "VentaHood L4",
+            "cfm": 300,
+            "type": "bool"
+        },
+        "N Bath Fan": {
+            "name": "N Bath Fan",
+            "cfm": 418,
+            "type": 255
+        },
+        "S Bath Fan": {
+            "name": "S Bath Fan",
+            "cfm": 418,
+            "type": 255
+        }
+    },
+    "supplies": {
+        "n001_output_33": {
+            "name": "Fresh Air",
+            "cfm": 200,
+            "type": "bool"
+        },
+        "53 23 84 1": {
+            "name": "Fresh Air Fan - 12 inch",
+            "cfm": 940,
+            "type": 100
+        },
+        "53 25 DA 1": {
+            "name": "Fresh Air Fan - 8 inch",
+            "cfm": 461,
+            "type": 255
+        }
+    }
+}
