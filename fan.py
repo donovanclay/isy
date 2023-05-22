@@ -11,8 +11,10 @@ class Fan:
     # value: the status of the isy.node
     # cfm: the cfm of the fan
     # type: whether the fan status is binary or a scale
-    #
+    # time_off: time since the fan was last turned off. 
+    #           this is used for knowing when the freshair damper is open
 
+    # this is the constructor method
     def __init__(self, isy, node_name: str):
         
         with open("util.json", "r") as file:
@@ -31,6 +33,7 @@ class Fan:
         if self.value == 0 and old_value != self.value:
             self.time_off = time.time()
 
+    # this provides formatted console output
     def __str__(self):
         string = ""
         string += "Name: {}{}{}\n".format(color.UNDERLINE, self.name, color.END)
@@ -40,23 +43,27 @@ class Fan:
         return string
 
 
-class ExhuastFan(Fan):
+class ExhaustFan(Fan):
     
+    # subclass of class fan
+
     # FIELDS
     # 
     # node: the isy node object
     # name: the english name of the node
     # value: the status of the isy.node
-    # time_off: time since the fan was last turned off
+    # time_off: time since the fan was last turned off.
     # cfm: the cfm of the fan
     # type: whether the fan status is binary or a scale
     #
+
+    # this is the constructor method
     def __init__(self, isy, node_name: str):
         with open("util.json", "r") as file:
             file_data = json.load(file)
         super().__init__(isy, node_name)
-        self.cfm = file_data["exhuast_fans"][node_name].get("cfm")
-        self.type = file_data["exhuast_fans"][node_name].get("type")
+        self.cfm = file_data["exhaust_fans"][node_name].get("cfm")
+        self.type = file_data["exhaust_fans"][node_name].get("type")
 
     def __str__(self):
         string = ""
@@ -70,6 +77,8 @@ class ExhuastFan(Fan):
 
 class SupplyFan(Fan):
 
+    # subclass of class fan
+
     # FIELDS
     # 
     # node: the isy node object
@@ -79,6 +88,8 @@ class SupplyFan(Fan):
     # cfm: the cfm of the fan
     # type: whether the fan status is binary or a scale
     #
+
+    # this is the constructor method
     def __init__(self, isy, node_name):
         with open("util.json", "r") as file:
             file_data = json.load(file)
@@ -88,23 +99,28 @@ class SupplyFan(Fan):
 
 
 class FansDict:
+    # FIELDS
+    #
+    # dict: a dictionary of the fans
+    
     # updates the state of the fans
     def update(self):
         for fan in self.dict:
             self.dict[fan].update()
 
 
-class ExhuastFans(FansDict):
+class ExhaustFans(FansDict):
 
+    # this is the constructor method
     def __init__(self, isy, node_names):
         self.dict = {}
         for node_name in node_names:
-            self.dict[node_name] = ExhuastFan(isy, node_name)
+            self.dict[node_name] = ExhaustFan(isy, node_name)
 
 class SupplyFans(FansDict):
 
+    # this is the constructor method
     def __init__(self, isy, supply_node_names):
         self.dict = {}
         for supply in supply_node_names:
             self.dict[supply] = SupplyFan(isy, supply)
-        

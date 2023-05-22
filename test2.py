@@ -112,9 +112,12 @@ async def main(url, username, password, tls_ver, events, node_servers):
         exhuast_fans = exhuast_fansObject.dict
         supply_fans = supply_fansObject.dict
 
+        # for the gui
         await populateTables(exhuast_table, exhuast_fans, supply_table, supply_fans, window)
 
         while True:
+            # this is the period for the clock cycle of the program
+            # without this the program would always be running at full speed
             await asyncio.sleep(1)
 
             exhuast_fansObject.update()
@@ -123,6 +126,7 @@ async def main(url, username, password, tls_ver, events, node_servers):
             exhuast_fans = exhuast_fansObject.dict
             supply_fans = supply_fansObject.dict
 
+            # gui thing
             await updateTables(exhuast_table, exhuast_fans, supply_table, supply_fans, window)
 
             # try:
@@ -130,6 +134,7 @@ async def main(url, username, password, tls_ver, events, node_servers):
             # except:
             #     pass
 
+            # these "label" variables are for the gui 
             exhuast_cfm = await getExhuastCFM(exhuast_fans, total_cfm_label)
             supply_cfm = await getSupplyCFM(supply_fans, supply_cfm_label)
             net_cfm = await balanceCFM(exhuast_fans, supply_fans, exhuast_cfm, net_cfm_label)
@@ -160,7 +165,10 @@ async def main(url, username, password, tls_ver, events, node_servers):
             system_status_subscriber.unsubscribe()
         await isy.shutdown()
 
-async def getExhuastCFM(exhuast_fans, total_cfm_label):
+
+# This method returns the total exhuast cfm of all the fans
+async def getExhuastCFM(exhuast_fans, total_cfm_label) -> int:
+
     cfm = 0
     for exhuast_fan in exhuast_fans:
         fan = exhuast_fans[exhuast_fan]

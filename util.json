@@ -1,5 +1,5 @@
 {
-    "exhuast_fan_node_names": [
+    "exhaust_fan_node_names": [
         "n001_zone_38",
         "n001_zone_39",
         "n001_zone_40",
@@ -12,7 +12,7 @@
         "53 23 84 1",
         "53 25 DA 1"
     ],
-    "exhuast_fans": {
+    "exhaust_fans": {
         "n001_zone_38": {
             "name": "VentaHood L1",
             "cfm": 200,
