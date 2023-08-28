@@ -5,7 +5,8 @@
         "n001_zone_40",
         "n001_zone_41",
         "N Bath Fan",
-        "S Bath Fan"
+        "S Bath Fan",
+        "Powder Fan Switch"
     ],
     "supply_fan_node_names": [
         "n001_output_33",
@@ -42,6 +43,11 @@
             "name": "S Bath Fan",
             "cfm": 418,
             "type": 255
+        },
+        "Powder Fan Switch": {
+            "name": "Powder Fan Switch",
+            "cfm": 170,
+            "type": 255
         }
     },
     "supplies": {
@@ -53,7 +59,7 @@
         "53 23 84 1": {
             "name": "Fresh Air Fan - 12 inch",
             "cfm": 940,
-            "type": 100
+            "type": 255
         },
         "53 25 DA 1": {
             "name": "Fresh Air Fan - 8 inch",

@@ -14,7 +14,7 @@ import time
 from urllib.parse import urlparse
 import json
 from threading import Thread
-from fan import Fan, ExhuastFans
+# from fan import Fan, ExhuastFans
 from color import color
 
 from pyisy import ISY
@@ -112,17 +112,23 @@ async def main(url, username, password, tls_ver, events, node_servers):
         while True:
             await asyncio.sleep(1)
 
-            with open("util.json", "r+") as file:
-                file_data = json.load(file)
-                for intake in file_data["supply_fan_names"]:
-                    node = isy.nodes[intake]
-                    file_data["supplies"][intake].update({"name":node.name})
+            print("N Bath Fan Status: " + str(isy.nodes["N Bath Fan"].status))
+            print("S Bath Fan Status: " + str(isy.nodes["S Bath Fan"].status))
+            print("Powder Fan Switch Status: " + str(isy.nodes["Powder Fan Switch"].status))
+
+            print("-----------------------------------------")
+
+            # with open("util.json", "r+") as file:
+            #     file_data = json.load(file)
+            #     for intake in file_data["supply_fan_names"]:
+            #         node = isy.nodes[intake]
+            #         file_data["supplies"][intake].update({"name":node.name})
                 
-                file.seek(0)
-                json.dump(file_data, file, indent = 4)
+            #     file.seek(0)
+            #     json.dump(file_data, file, indent = 4)
         
         # exhuast_fansObject = ExhuastFans(isy, file_data.get("exhuast_fan_names"))
-            break
+            # break
             # await asyncio.sleep(1)
 
             # exhuast_fansObject.update()

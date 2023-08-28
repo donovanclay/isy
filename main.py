@@ -116,14 +116,8 @@ async def main(url, username, password, tls_ver, events, node_servers):
         exhaust_fansObject = ExhaustFans(isy, file_data.get("exhaust_fan_node_names"))
         supply_fansObject = SupplyFans(isy, file_data.get("supply_fan_node_names"))
 
-        # for the gui
-        window, exhaust_table, supply_table, total_cfm_label, supply_cfm_label, net_cfm_label = await makeGui()
-
         exhaust_fans = exhaust_fansObject.dict
         supply_fans = supply_fansObject.dict
-
-        # for the gui
-        await populateTables(exhaust_table, exhaust_fans, supply_table, supply_fans, window)
 
         while True:
             # this is the period for the clock cycle of the program
@@ -136,18 +130,10 @@ async def main(url, username, password, tls_ver, events, node_servers):
             exhaust_fans = exhaust_fansObject.dict
             supply_fans = supply_fansObject.dict
 
-            # gui thing
-            await updateTables(exhaust_table, exhaust_fans, supply_table, supply_fans, window)
 
-            # try:
-            #     await updateTables(exhaust_table, exhaust_fans, supply_table, supply_fans, window)
-            # except:
-            #     pass
-
-            # these "label" variables are for the gui 
-            exhaust_cfm = await getExhaustCFM(exhaust_fans, total_cfm_label)
-            supply_cfm = await getSupplyCFM(supply_fans, supply_cfm_label)
-            net_cfm = await balanceCFM(exhaust_fans, supply_fans, exhaust_cfm, net_cfm_label)
+            exhaust_cfm = await getExhaustCFM(exhaust_fans)
+            supply_cfm = await getSupplyCFM(supply_fans)
+            net_cfm = await balanceCFM(exhaust_fans, supply_fans, exhaust_cfm, supply_cfm)
 
             for exhaust_fan in exhaust_fans:
                 fan = exhaust_fans[exhaust_fan]
@@ -176,7 +162,7 @@ async def main(url, username, password, tls_ver, events, node_servers):
         await isy.shutdown()
 
 # This method returns the total exhuast cfm of all the fans
-async def getExhaustCFM(exhaust_fans, total_cfm_label):
+async def getExhaustCFM(exhaust_fans):
     cfm = 0
     for exhaust_fan in exhaust_fans:
         fan = exhaust_fans[exhaust_fan]
@@ -189,13 +175,9 @@ async def getExhaustCFM(exhaust_fans, total_cfm_label):
             ratio = 1/fan.type
             cfm += round(fan.cfm * fan.value * ratio)
 
-    try:
-        total_cfm_label.config(text = "Total CFM: {}".format(cfm))
-    except:
-        pass
     return cfm
 
-async def getSupplyCFM(supply_fans, supply_cfm_label):
+async def getSupplyCFM(supply_fans):
     cfm = 0
     for supply_fan in supply_fans:
         fan = supply_fans[supply_fan]
@@ -207,10 +189,7 @@ async def getSupplyCFM(supply_fans, supply_cfm_label):
         if type(fan.type) == int:
             ratio = 1/fan.type
             cfm += round(fan.cfm * fan.value * ratio)
-    try:       
-        supply_cfm_label.config(text = "Supply CFM: {}".format(cfm))
-    except:
-        pass
+
     return cfm
 
 async def getFan(exhaust_fans, supply_fans, node_name):
@@ -232,7 +211,19 @@ async def turnOffSupplies(damper, fan_12_inch, fan_8_inch):
     await fan_12_inch.node.turn_off()
     await fan_8_inch.node.turn_off()
 
-async def balanceCFM(exhaust_fans, supply_fans, exhaust_cfm, net_cfm_label):
+# returns the CFM the supply fan is set to
+async def turnOnSupply(fan, net_cfm):
+    # print("fan status: " + str(fan.node.status))
+    fan_percentage = min(1, net_cfm/fan.cfm)
+    # print("fan percentage: " + str(fan_percentage))
+    cfm_of_fan = round(fan_percentage * fan.cfm)
+    print("Turning on fan for {} cfm".format(cfm_of_fan)) 
+    on_level = round(fan_percentage * 255)
+    fan.value = on_level
+    await fan.node.turn_on(int(on_level))
+    return cfm_of_fan
+        
+async def balanceCFM(exhaust_fans, supply_fans, exhaust_cfm, supply_cfm):
     FRESH_AIR = "n001_output_33"
     FRESH_AIR_FAN_12_INCH = "53 23 84 1"
     FRESH_AIR_FAN_8_INCH = "53 25 DA 1"
@@ -244,142 +235,43 @@ async def balanceCFM(exhaust_fans, supply_fans, exhaust_cfm, net_cfm_label):
     net_cfm = exhaust_cfm
 
     if net_cfm > 0:
-        
         # if the damper is closed...
         if damper.value == 0:
             print("Opening the fresh air damper")
+            print("Status before: " + str(damper.node.status))
             await damper.node.turn_on()
+            print("status after: " + str(damper.node.status))
+
+
             damper.time_off = time.time() 
         net_cfm -= damper.cfm
-        print(net_cfm)
 
         # if more supply is needed...
         if net_cfm > 0:
+
             # if the damper is fully open
             if time.time() - damper.time_off > 33:
-                fan_percentage = min(1, net_cfm/fan_8_inch.cfm)
-                cfm_of_fan = round(fan_percentage * fan_8_inch.cfm)
-                print("Turning on fan for {} cfm".format(cfm_of_fan)) 
-                on_level = round(fan_percentage * 255)
-                fan_8_inch.value = on_level
-                await fan_8_inch.node.turn_on(int(on_level))
-                net_cfm -= cfm_of_fan
+
+                net_cfm -= await turnOnSupply(fan_8_inch, net_cfm)
+
             else: 
                 print("damper not open yet")
+
+            # if more supply is needed...
+            if net_cfm > 0:
+                net_cfm -= await turnOnSupply(fan_12_inch, net_cfm)
+            else:
+                await fan_12_inch.node.turn_off()
+
         else:
             await fan_12_inch.node.turn_off()
             await fan_8_inch.node.turn_off()
-    else:
+
+    elif supply_cfm > 0:
         await turnOffSupplies(damper, fan_12_inch, fan_8_inch)
 
-    try:
-        net_cfm_label.config(text = "Net CFM: {}".format(net_cfm))
-    except:
-        pass
-
     return net_cfm
-        # damper_ISYnode = getSupplyFanISYNode(supply_fans, fresh_air)
-        # fan_12_inch_ISYnode = getSupplyFanISYNode(supply_fans, fresh_air_fan_12_inch)
-        # fan_8_inch_ISYnode = getSupplyFanISYNode(supply_fans, fresh_air_fan_8_inch)
-
-        # if the damper is not open
-        # if damper_ISYnode.value != 100:
-        #     await damper_ISYnode.turn_on()
             
-async def makeGui():  
-    # returns
-    # Tuple[window, exhaust_table, supply_table, total_cfm_label, supply_cfm_label, net_cfm_label]
-
-    WIDTH = 1200
-    HEIGHT = 900
-    COLUMNS = 4
-    COLUMN_WIDTH = ((WIDTH//2)//COLUMNS) - 10
-
-    window = tk.Tk()
-    window.title("ClayHuang Indoor Air Quality")
-    window.geometry("%dx%d" % (WIDTH, HEIGHT))
-    window['bg'] = '#1f3456'
-
-    total_cfm_label = tk.Label(window, text = "Total CFM: ", width=30, height=3, bg = "#64988d")
-    total_cfm_label.place(relx=0.333, rely = 0.2, anchor=tk.CENTER)
-
-    supply_cfm_label = tk.Label(window, text = "Supply CFM: ", width=30, height=3, bg = "#64988d")
-    supply_cfm_label.place(relx=0.5, rely = 0.2, anchor=tk.CENTER)
-
-    net_cfm_label = tk.Label(window, text = "Net CFM: ", width=30, height=3, bg = "#64988d")
-    net_cfm_label.place(relx=0.666, rely = 0.2, anchor=tk.CENTER)
-
-    exhaust_label = tk.Label(window, text = "Exhausts", width=15, height=3, bg ="#1f3456", fg='#fff')
-    exhaust_label.place(relx= 0.25, rely = 0.35, anchor=tk.CENTER)
-
-    supply_label = tk.Label(window, text = "Supplies", width=15, height=3, bg ="#1f3456", fg='#fff')
-    supply_label.place(relx= 0.75, rely = 0.35, anchor=tk.CENTER)
-
-    frame1 = tk.Frame(window)
-    # frame1.pack(ipadx=20, ipady=20, fill=tk.X, side=tk.LEFT)
-    frame1.place(relx=0.25, rely=0.5, anchor=tk.CENTER)
-    exhaust_table = ttk.Treeview(frame1)
-    exhaust_table['columns'] = ('fan_name', 'fan_value', 'max_cfm', 'value_type')
-
-    frame2 = tk.Frame(window)
-    # frame2.pack(ipadx=20, ipady=20, fill=tk.X, side=tk.RIGHT)
-    frame2.place(relx=0.75, rely=0.5, anchor=tk.CENTER)
-    supply_table = ttk.Treeview(frame2)
-    supply_table['columns'] = ('fan_name', 'fan_value', 'max_cfm', 'value_type')
-    columns = [('fan_name', 'Fan Name'), ('fan_value', 'Value'), ('max_cfm', 'Max CFM'), ('value_type', 'Type')]
-
-    exhaust_table.column("#0", width=0,  stretch=tk.NO)
-    exhaust_table.heading("#0",text="",anchor=tk.CENTER)
-    supply_table.column("#0", width=0,  stretch=tk.NO)
-    supply_table.heading("#0",text="",anchor=tk.CENTER)
-    for column in columns:
-        exhaust_table.column(column[0], anchor=tk.CENTER, width=COLUMN_WIDTH)
-        exhaust_table.heading(column[0],text=column[1],anchor=tk.CENTER)
-
-        supply_table.column(column[0], anchor=tk.CENTER, width=COLUMN_WIDTH)
-        supply_table.heading(column[0],text=column[1],anchor=tk.CENTER)
-
-    return window, exhaust_table, supply_table, total_cfm_label, supply_cfm_label, net_cfm_label
-
-async def populateTables(exhaust_table, exhaust_fans, supply_table, supply_fans, window):
-    count = 0
-    for fan in exhaust_fans:
-        real_fan = exhaust_fans[fan]
-        # my_table.insert(parent='',index='end',iid=0,text='', values = ('8 inch fan', '100', '418', '100'))
-        exhaust_table.insert(parent='',index='end',iid=count,text='', values = (real_fan.name, real_fan.value, real_fan.cfm, real_fan.type))
-        count+=1
-
-    count = 0
-    for fan in supply_fans:
-        real_fan = supply_fans[fan]
-        # my_table.insert(parent='',index='end',iid=0,text='', values = ('8 inch fan', '100', '418', '100'))
-        supply_table.insert(parent='',index='end',iid=count,text='', values = (real_fan.name, real_fan.value, real_fan.cfm, real_fan.type))
-        count+=1
-
-    exhaust_table.pack()
-    supply_table.pack()
-
-    window.update()
-
-async def updateTables(exhaust_table, exhaust_fans, supply_table, supply_fans, window):
-    count = 0
-    for fan in exhaust_fans:
-        real_fan = exhaust_fans[fan]
-        # my_table.insert(parent='',index='end',iid=0,text='', values = ('8 inch fan', '100', '418', '100'))
-        exhaust_table.item(str(count), values = (real_fan.name, real_fan.value, real_fan.cfm, real_fan.type))
-        count+=1
-
-    count = 0
-    for fan in supply_fans:
-        real_fan = supply_fans[fan]
-        # my_table.insert(parent='',index='end',iid=0,text='', values = ('8 inch fan', '100', '418', '100'))
-        supply_table.item(str(count), values = (real_fan.name, real_fan.value, real_fan.cfm, real_fan.type))
-        count+=1
-
-    exhaust_table.pack()
-    supply_table.pack()
-
-    window.update()
 
 if __name__ == "__main__":
 
