@@ -1,0 +1,14 @@
+body {
+    margin: 0;
+}
+
+div {
+    background-color: beige;
+    width: 60vw;
+    min
+    margin: 0 auto;
+    padding: 0;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: end;
+}
