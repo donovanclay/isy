@@ -19,13 +19,14 @@ from fan import ExhaustFans, SupplyFans
 load_dotenv()
 
 ADDRESS = os.getenv("ADDRESS")
-USERNAME = os.getenv("USERNAME")
+USERNAME = os.getenv("USER_NAME")
 PASSWORD = os.getenv("PASSWORD")
 
 _LOGGER = logging.getLogger(__name__)
 
 
 async def main(url, username, password, tls_ver, events, node_servers):
+    
     """Execute connection to ISY and load all system info."""
     _LOGGER.info("Starting PyISY...")
     t_0 = time.time()
@@ -123,7 +124,10 @@ async def main(url, username, password, tls_ver, events, node_servers):
 
             exhaust_cfm = await get_exhaust_cfm(exhaust_fans)
             supply_cfm = await get_supply_cfm(supply_fans)
-            net_cfm = await balance_cfm(exhaust_fans, supply_fans, exhaust_cfm, supply_cfm)
+            net_cfm = float('-inf')
+
+            if int(isy.variables.get_by_name("IAQ_on_off").status) == 1:
+                net_cfm = await balance_cfm(exhaust_fans, supply_fans, exhaust_cfm, supply_cfm)
 
             for exhaust_fan in exhaust_fans:
                 fan = exhaust_fans[exhaust_fan]
@@ -135,7 +139,12 @@ async def main(url, username, password, tls_ver, events, node_servers):
 
             print("{}TOTAL EXHAUST CFM: {}{}".format(color.BOLD, exhaust_cfm, color.END))
             print("{}TOTAL SUPPLY CFM: {}{}".format(color.BOLD, supply_cfm, color.END))
-            print("{}NET CFM: {}{}".format(color.BOLD, net_cfm, color.END))
+            # print(isy.variables.get_by_name("IAQ_on_off").status)
+            # print(int(isy.variables.get_by_name("IAQ_on_off").status) == 1)
+            if int(isy.variables.get_by_name("IAQ_on_off").status) == 1:
+                print("{}NET CFM: {}{}".format(color.BOLD, net_cfm, color.END))
+            else:
+                print("{}NOT BALANCING BECAUSE IAQ var = {} {}".format(color.BOLD, isy.variables.get_by_name("IAQ_on_off").status, color.END))
             print(color.BOLD + time.ctime(time.time()) + color.END)
             print("-----------------------------------------")
 

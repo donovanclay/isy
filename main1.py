@@ -26,7 +26,7 @@ from pyisy.nodes import NodeChangedEvent
 load_dotenv()
 
 ADDRESS = os.getenv("ADDRESS")
-USERNAME = os.getenv("USERNAME")
+USERNAME = os.getenv("USER_NAME")
 PASSWORD = os.getenv("PASSWORD")
 
 _LOGGER = logging.getLogger(__name__)
@@ -91,7 +91,7 @@ async def main(url, username, password, tls_ver, events, node_servers):
             event.address,
             event_desc,
             event.event_info if event.event_info else "",
-            )
+        )
 
     def system_status_handler(event: str) -> None:
         """Handle a system status changed event sent ISY class."""
@@ -106,8 +106,6 @@ async def main(url, username, password, tls_ver, events, node_servers):
             system_status_subscriber = isy.status_events.subscribe(
                 system_status_handler
             )
-        
-        
 
         while True:
             await asyncio.sleep(1)
@@ -117,39 +115,43 @@ async def main(url, username, password, tls_ver, events, node_servers):
             print("Powder Fan Switch Status: " + str(isy.nodes["Powder Fan Switch"].status))
 
             print("-----------------------------------------")
+            print(isy.nodes["n002_48a2e62ce05605"].aux_properties["CLIHUM"].formatted)
+            print(isy.nodes["n002_48a2e62ce05605"].aux_properties["CLIHUM"].value)
+            print(isy.nodes["Double Bathroom"].aux_properties["CLIHUM"].value)
+            print(repr(isy.variables))
+            # print(isy.variables.get_by_name("IAQ On/Off").status)
+
 
             # with open("util.json", "r+") as file:
             #     file_data = json.load(file)
             #     for intake in file_data["supply_fan_names"]:
             #         node = isy.nodes[intake]
             #         file_data["supplies"][intake].update({"name":node.name})
-                
+
             #     file.seek(0)
             #     json.dump(file_data, file, indent = 4)
-        
+
         # exhuast_fansObject = ExhuastFans(isy, file_data.get("exhuast_fan_names"))
-            # break
-            # await asyncio.sleep(1)
+        # break
+        # await asyncio.sleep(1)
 
-            # exhuast_fansObject.update()
-            # exhuast_fans = exhuast_fansObject.dict
-            
-            
+        # exhuast_fansObject.update()
+        # exhuast_fans = exhuast_fansObject.dict
 
-            # cfm = await getExhuastCFM(exhuast_fans)
+        # cfm = await getExhuastCFM(exhuast_fans)
 
-            # for exhuast_fan in exhuast_fans:
-            #     fan = exhuast_fans[exhuast_fan]
-            #     print(fan)
+        # for exhuast_fan in exhuast_fans:
+        #     fan = exhuast_fans[exhuast_fan]
+        #     print(fan)
 
-            # if cfm > 0 and 
+        # if cfm > 0 and
 
-            # print("{}TOTAL EXHUAST CFM: {}{}".format(color.BOLD, cfm, color.END))
-            # print(color.BOLD + time.ctime(time.time()) + color.END)
-            # print("-----------------------------------------")
+        # print("{}TOTAL EXHUAST CFM: {}{}".format(color.BOLD, cfm, color.END))
+        # print(color.BOLD + time.ctime(time.time()) + color.END)
+        # print("-----------------------------------------")
 
-              
-               
+
+
     except asyncio.CancelledError:
         pass
     finally:
@@ -159,17 +161,18 @@ async def main(url, username, password, tls_ver, events, node_servers):
             system_status_subscriber.unsubscribe()
         await isy.shutdown()
 
+
 async def getExhuastCFM(exhuast_fans):
     cfm = 0
     for exhuast_fan in exhuast_fans:
         fan = exhuast_fans[exhuast_fan]
         # print(fan)
-        
+
         if fan.type == "bool":
             cfm += fan.value and fan.cfm
-        
+
         if fan.type == "255":
-            ratio = 1/255
+            ratio = 1 / 255
             cfm += round(fan.cfm * fan.value * ratio)
 
     return cfm
@@ -179,9 +182,10 @@ def openFreshAir(node):
     node.turn_on()
     asyncio.sleep(33)
 
+
 def test(hello):
     print(hello)
-    for i in range (1,31):
+    for i in range(1, 31):
         print(i)
         asyncio.sleep(1)
 
@@ -209,5 +213,3 @@ if __name__ == "__main__":
         )
     except KeyboardInterrupt:
         _LOGGER.warning("KeyboardInterrupt received. Disconnecting!")
-
-
