@@ -4,6 +4,8 @@
         "n001_zone_39",
         "n001_zone_40",
         "n001_zone_41",
+        "n001_zone_36",
+        "n001_zone_37",
         "N Bath Fan",
         "S Bath Fan",
         "Powder Fan Switch"
@@ -32,6 +34,16 @@
         "n001_zone_41": {
             "name": "VentaHood L4",
             "cfm": 300,
+            "type": "bool"
+        },
+        "n001_zone_36": {
+            "name": "Dryer Fan South", 
+            "cfm": 100,
+            "type": "bool"
+        },
+        "n001_zone_37": {
+            "name": "Dryer Fan North", 
+            "cfm": 100,
             "type": "bool"
         },
         "N Bath Fan": {
