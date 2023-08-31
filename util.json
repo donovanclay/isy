@@ -78,5 +78,14 @@
             "cfm": 461,
             "type": 255
         }
+    },
+    "honeywell_sens": {
+        "n002_48a2e62ce05605" : {
+            "name" : "Double Bathroom"
+        },
+        "n002_48a2e62ce05603" : {
+            "name" : "Guest Bathroom"
+        }
+
     }
 }
