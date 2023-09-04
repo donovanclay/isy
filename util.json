@@ -8,7 +8,8 @@
         "n001_zone_37",
         "N Bath Fan",
         "S Bath Fan",
-        "Powder Fan Switch"
+        "Powder Fan Switch",
+        "Crawlspace Exhaust Fan"
     ],
     "supply_fan_node_names": [
         "n001_output_33",
@@ -60,6 +61,11 @@
             "name": "Powder Fan Switch",
             "cfm": 170,
             "type": 255
+        },
+        "Crawlspace Exhaust Fan": {
+            "name": "Crawlspace Exhaust Fan",
+            "cfm": 483,
+            "type": 255
         }
     },
     "supplies": {
@@ -79,13 +85,24 @@
             "type": 255
         }
     },
-    "honeywell_sens": {
-        "n002_48a2e62ce05605" : {
-            "name" : "Double Bathroom"
+    "honeywell_sens": [
+        {
+            "sens": "Double Bathroom",
+            "fan": "N Bath Fan",
+            "hum": 60,
+            "hum_t": 900,
+            "motion_power": 77,
+            "motion_t": 900
+
         },
-        "n002_48a2e62ce05603" : {
-            "name" : "Guest Bathroom"
+        {
+            "sens" : "Guest Bathroom",
+            "fan" : "S Bath Fan",
+            "hum": 60,
+            "hum_t": 900,
+            "motion_power": 77,
+            "motion_t": 900
         }
 
-    }
+    ]
 }

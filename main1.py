@@ -77,7 +77,7 @@ async def main(url, username, password, tls_ver, events, node_servers):
         raise
 
     # Print a representation of all the Nodes
-    _LOGGER.debug(repr(isy.nodes))
+    # _LOGGER.debug(repr(isy.nodes))
     _LOGGER.info("Total Loading time: %.2fs", time.time() - t_0)
 
     node_changed_subscriber = None
@@ -107,18 +107,30 @@ async def main(url, username, password, tls_ver, events, node_servers):
                 system_status_handler
             )
 
+        # isy.nodes["Crawlspace Exhaust Fan"].turn_on(5)
         while True:
             await asyncio.sleep(1)
+            # await isy.nodes["Crawlspace Exhaust Fan"].turn_on(5)
+            # await isy.nodes["Crawlspace Exhaust Fan"].turn_off()
+            # print(isy.nodes["Crawlspace Exhaust Fan"].status)
 
-            print("N Bath Fan Status: " + str(isy.nodes["N Bath Fan"].status))
-            print("S Bath Fan Status: " + str(isy.nodes["S Bath Fan"].status))
-            print("Powder Fan Switch Status: " + str(isy.nodes["Powder Fan Switch"].status))
-
-            print("-----------------------------------------")
-            print(isy.nodes["n002_48a2e62ce05605"].aux_properties["CLIHUM"].formatted)
-            print(isy.nodes["n002_48a2e62ce05605"].aux_properties["CLIHUM"].value)
-            print(isy.nodes["Double Bathroom"].aux_properties["CLIHUM"].value)
-            print(repr(isy.variables))
+            # print("N Bath Fan Status: " + str(isy.nodes["N Bath Fan"].status))
+            # print("S Bath Fan Status: " + str(isy.nodes["S Bath Fan"].status))
+            # print("Powder Fan Switch Status: " + str(isy.nodes["Powder Fan Switch"].status))
+            #
+            # print("-----------------------------------------")
+            # print(isy.nodes["n002_48a2e62ce05605"].aux_properties["CLIHUM"].formatted)
+            # print(isy.nodes["n002_48a2e62ce05605"].aux_properties["CLIHUM"].value)
+            # print(isy.nodes["Double Bathroom"].aux_properties["CLIHUM"].value)
+            # print(bool(isy.nodes["Double Bathroom"].aux_properties["GV3"].value))
+            # print(isy.nodes["Double Bathroom"].aux_properties["GV4"].formatted)
+            # isy.nodes["N Bath Fan"].turn_on(255)
+            isy.nodes["N Bath Fan"].turn_off()
+            print(isy.nodes["N Bath Fan"].status)
+            # print(isy.)
+            # print(isy.nodes["Guest Bathroom"].aux_properties["GV3"].formatted)
+            # print(isy.nodes["Guest Bathroom"].aux_properties["GV4"].formatted)
+            # print(repr(isy.variables))
             # print(isy.variables.get_by_name("IAQ On/Off").status)
 
 

@@ -12,9 +12,11 @@ from pyisy.constants import NODE_CHANGED_ACTIONS
 from pyisy.logging import enable_logging
 from pyisy.nodes import NodeChangedEvent
 
+import humidity
 from color import color
 # local files
 from fan import ExhaustFans, SupplyFans
+import AQITracker
 
 load_dotenv()
 
@@ -26,7 +28,6 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def main(url, username, password, tls_ver, events, node_servers):
-    
     """Execute connection to ISY and load all system info."""
     _LOGGER.info("Starting PyISY...")
     t_0 = time.time()
@@ -108,13 +109,21 @@ async def main(url, username, password, tls_ver, events, node_servers):
         with open("util.json", "r") as file:
             file_data = json.load(file)
 
-        exhaust_fans_object = ExhaustFans(isy, file_data.get("exhaust_fan_node_names"))
-        supply_fans_object = SupplyFans(isy, file_data.get("supply_fan_node_names"))
+            exhaust_fans_object = ExhaustFans(isy, file_data.get("exhaust_fan_node_names"))
+            supply_fans_object = SupplyFans(isy, file_data.get("supply_fan_node_names"))
+            humidity_controller = humidity.Humidity(isy, file_data)
+        # aqi_tracker = AQITracker.AQITracker()
 
         while True:
             # this is the period for the clock cycle of the program
             # without this the program would always be running at full speed
             await asyncio.sleep(1)
+
+            # if aqi_tracker.aqi_acceptable():
+            #     isy.nodes["Craw"]
+            # isy.nodes["Double Bathroom"].aux_properties["CLIHUM"].value
+
+            humidity_controller.check_humidity()
 
             exhaust_fans_object.update()
             supply_fans_object.update()
@@ -144,7 +153,9 @@ async def main(url, username, password, tls_ver, events, node_servers):
             if int(isy.variables.get_by_name("IAQ_on_off").status) == 1:
                 print("{}NET CFM: {}{}".format(color.BOLD, net_cfm, color.END))
             else:
-                print("{}NOT BALANCING BECAUSE IAQ var = {} {}".format(color.BOLD, isy.variables.get_by_name("IAQ_on_off").status, color.END))
+                print("{}NOT BALANCING BECAUSE IAQ var = {} {}".format(color.BOLD,
+                                                                       isy.variables.get_by_name("IAQ_on_off").status,
+                                                                       color.END))
             print(color.BOLD + time.ctime(time.time()) + color.END)
             print("-----------------------------------------")
 
@@ -198,13 +209,6 @@ async def get_fan(exhaust_fans, supply_fans, node_name):
     for fan in supply_fans:
         if fan == node_name:
             return supply_fans[fan]
-
-
-# def get_supply_fan_ISY_node(supply_fans, index):
-#     with open("util.json", "r") as file:
-#         file_data = json.load(file)
-#     node_name = file_data["supply_fan_node_names"][index]
-#     return supply_fans[node_name].node
 
 
 async def turn_off_supplies(damper, fan_12_inch, fan_8_inch):
@@ -280,7 +284,7 @@ if __name__ == "__main__":
     enable_logging(logging.DEBUG)
 
     _LOGGER.info(
-        "ISY URL: %s, username: %s, TLS: %s",
+        "ISY URL: %s, username: %s",
         ADDRESS,
         USERNAME,
     )

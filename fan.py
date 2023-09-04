@@ -2,29 +2,29 @@ import json
 import time
 from color import color
 
+
 class Fan:
-    
+
     # FIELDS
     # 
     # node: the isy node object
     # name: the english name of the node
     # value: the status of the isy.node
     # cfm: the cfm of the fan
-    # type: whether the fan status is binary or a scale
+    # type: # whether the fan status is binary or a scale
     # time_off: time since the fan was last turned off. 
     #           this is used for knowing when the freshair damper is open
 
     # this is the constructor method
     def __init__(self, isy, node_name: str):
-        
         with open("util.json", "r") as file:
             file_data = json.load(file)
-            
+
         self.node = isy.nodes[node_name]
         self.name = self.node.name
         self.value = self.node.status
         self.time_off = 0
-        
+
     def update(self):
         old_value = self.value
         self.value = self.node.status
@@ -44,7 +44,7 @@ class Fan:
 
 
 class ExhaustFan(Fan):
-    
+
     # subclass of class fan
 
     # FIELDS
@@ -54,7 +54,7 @@ class ExhaustFan(Fan):
     # value: the status of the isy.node
     # time_off: time since the fan was last turned off.
     # cfm: the cfm of the fan
-    # type: whether the fan status is binary or a scale
+    # type: # whether the fan status is binary or a scale
     #
 
     # this is the constructor method
@@ -86,7 +86,7 @@ class SupplyFan(Fan):
     # value: the status of the isy.node
     # time_off: time since the turned on
     # cfm: the cfm of the fan
-    # type: whether the fan status is binary or a scale
+    # type: # whether the fan status is binary or a scale
     #
 
     # this is the constructor method
@@ -102,7 +102,7 @@ class FansDict:
     # FIELDS
     #
     # dict: a dictionary of the fans
-    
+
     # updates the state of the fans
     def update(self):
         for fan in self.dict:
@@ -116,6 +116,7 @@ class ExhaustFans(FansDict):
         self.dict = {}
         for node_name in node_names:
             self.dict[node_name] = ExhaustFan(isy, node_name)
+
 
 class SupplyFans(FansDict):
 
