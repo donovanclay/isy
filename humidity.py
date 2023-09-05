@@ -7,11 +7,16 @@ def get_hum(self):
 
 
 def get_motion(self):
-    match self.status:
-        case 0:
-            return False
-        case 2:
-            return True
+    # match self.status:
+    #     case 0:
+    #         return False
+    #     case 2:
+    #         return True
+    status = self.status
+    if status == 0:
+        return False
+    if status == 2:
+        return True
 
 
 class Room:
