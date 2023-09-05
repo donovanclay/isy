@@ -87,16 +87,17 @@
     },
     "honeywell_sens": [
         {
-            "sens": "Double Bathroom",
+            "sens_hum": "Double Bathroom",
+            "sens_motion": "N-Bath Motion",
             "fan": "N Bath Fan",
             "hum": 60,
             "hum_t": 900,
             "motion_power": 77,
             "motion_t": 900
-
         },
         {
-            "sens" : "Guest Bathroom",
+            "sens_hum" : "Guest Bathroom",
+            "sens_motion": "S-Bath Motion",
             "fan" : "S Bath Fan",
             "hum": 60,
             "hum_t": 900,

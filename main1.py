@@ -13,7 +13,6 @@ import logging
 import time
 from urllib.parse import urlparse
 import json
-from threading import Thread
 # from fan import Fan, ExhuastFans
 from color import color
 
@@ -110,9 +109,12 @@ async def main(url, username, password, tls_ver, events, node_servers):
         # isy.nodes["Crawlspace Exhaust Fan"].turn_on(5)
         while True:
             await asyncio.sleep(1)
-            # await isy.nodes["Crawlspace Exhaust Fan"].turn_on(5)
-            # await isy.nodes["Crawlspace Exhaust Fan"].turn_off()
-            # print(isy.nodes["Crawlspace Exhaust Fan"].status)
+            await isy.nodes["Crawlspace Exhaust Fan"].turn_on(5)
+            await isy.nodes["Crawlspace Exhaust Fan"].turn_off()
+            await isy.nodes["Crawlspace Exhaust Fan"].turn_on()
+            # await isy.nodes["C"]
+            # await isy.nodes["Craadwlspace Exhaust Fan"].turn_off()
+            print(isy.nodes["Crawlspace Exhaust Fan"].status)
 
             # print("N Bath Fan Status: " + str(isy.nodes["N Bath Fan"].status))
             # print("S Bath Fan Status: " + str(isy.nodes["S Bath Fan"].status))
@@ -122,11 +124,16 @@ async def main(url, username, password, tls_ver, events, node_servers):
             # print(isy.nodes["n002_48a2e62ce05605"].aux_properties["CLIHUM"].formatted)
             # print(isy.nodes["n002_48a2e62ce05605"].aux_properties["CLIHUM"].value)
             # print(isy.nodes["Double Bathroom"].aux_properties["CLIHUM"].value)
+            # print(isy.nodes["Guest Bathroom"].aux_properties["CLIHUM"].value)
+            # print(isy.nodes["n001_zone_15"].status)
+            # print(isy.nodes["S-Bath Motion"].status)
+            # print(isy.nodes["UpHall  Bath"].status)
+            # print(isy.nodes["n001_output_33"].status)
             # print(bool(isy.nodes["Double Bathroom"].aux_properties["GV3"].value))
             # print(isy.nodes["Double Bathroom"].aux_properties["GV4"].formatted)
             # isy.nodes["N Bath Fan"].turn_on(255)
-            isy.nodes["N Bath Fan"].turn_off()
-            print(isy.nodes["N Bath Fan"].status)
+            # isy.nodes["N Bath Fan"].turn_off()
+            # print(isy.nodes["N Bath Fan"].status)
             # print(isy.)
             # print(isy.nodes["Guest Bathroom"].aux_properties["GV3"].formatted)
             # print(isy.nodes["Guest Bathroom"].aux_properties["GV4"].formatted)

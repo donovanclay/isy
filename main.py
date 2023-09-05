@@ -123,7 +123,7 @@ async def main(url, username, password, tls_ver, events, node_servers):
             #     isy.nodes["Craw"]
             # isy.nodes["Double Bathroom"].aux_properties["CLIHUM"].value
 
-            humidity_controller.check_humidity()
+            await humidity_controller.check_humidity()
 
             exhaust_fans_object.update()
             supply_fans_object.update()
@@ -226,16 +226,17 @@ async def turn_on_supply(fan, net_cfm):
     print("Turning on fan for {} cfm".format(cfm_of_fan))
     on_level = round(fan_percentage * 255)
     fan.value = on_level
-    await fan.node.turn_on(int(on_level))
+    if fan.node.status != int(on_level):
+        await fan.node.turn_on(int(on_level))
     return cfm_of_fan
 
 
 async def balance_cfm(exhaust_fans, supply_fans, exhaust_cfm, supply_cfm):
-    FRESH_AIR = "n001_output_33"
+    DAMPER = "n001_output_33"
     FRESH_AIR_FAN_12_INCH = "53 23 84 1"
     FRESH_AIR_FAN_8_INCH = "53 25 DA 1"
 
-    damper = await get_fan(exhaust_fans, supply_fans, FRESH_AIR)
+    damper = await get_fan(exhaust_fans, supply_fans, DAMPER)
     fan_12_inch = await get_fan(exhaust_fans, supply_fans, FRESH_AIR_FAN_12_INCH)
     fan_8_inch = await get_fan(exhaust_fans, supply_fans, FRESH_AIR_FAN_8_INCH)
 
@@ -270,11 +271,14 @@ async def balance_cfm(exhaust_fans, supply_fans, exhaust_cfm, supply_cfm):
                 await fan_12_inch.node.turn_off()
 
         else:
-            await fan_12_inch.node.turn_off()
-            await fan_8_inch.node.turn_off()
+            if fan_12_inch.node.status != 0:
+                await fan_12_inch.node.turn_off()
+            if fan_8_inch.node.status != 0:
+                await fan_8_inch.node.turn_off()
 
     elif supply_cfm > 0:
-        await turn_off_supplies(damper, fan_12_inch, fan_8_inch)
+        if damper.node.status != 0 or fan_12_inch.node.status != 0 or fan_8_inch.node.status != 0:
+            await turn_off_supplies(damper, fan_12_inch, fan_8_inch)
 
     return net_cfm
 
