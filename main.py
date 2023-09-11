@@ -171,6 +171,7 @@ async def main(url, username, password, tls_ver, events, node_servers):
 
 # This method returns the total exhaust cfm of all the fans
 async def get_exhaust_cfm(exhaust_fans):
+    cfm_ventahood = 0
     cfm = 0
     for exhaust_fan in exhaust_fans:
         fan = exhaust_fans[exhaust_fan]
@@ -178,12 +179,21 @@ async def get_exhaust_cfm(exhaust_fans):
 
         if fan.type == "bool":
             cfm += fan.value and fan.cfm
+            # if fan.name.__contains__("Ventahood"):
+            #     cfm_ventahood += fan.value and fan.cfm
+            # else:
+            #     cfm += fan.value and fan.cfm
 
         if type(fan.type) == int:
             ratio = 1 / fan.type
             cfm += round(fan.cfm * fan.value * ratio)
+            # if fan.name.__contains__("Ventahood"):
+            #     cfm_ventahood += round(fan.cfm * fan.value * ratio)
+            # else:
+            #     cfm += round(fan.cfm * fan.value * ratio)
 
     return cfm
+    # return (cfm, cfm_ventahood)
 
 
 async def get_supply_cfm(supply_fans):
@@ -240,9 +250,17 @@ async def balance_cfm(exhaust_fans, supply_fans, exhaust_cfm, supply_cfm):
     fan_12_inch = await get_fan(exhaust_fans, supply_fans, FRESH_AIR_FAN_12_INCH)
     fan_8_inch = await get_fan(exhaust_fans, supply_fans, FRESH_AIR_FAN_8_INCH)
 
+    fan_12_inch_reset = (0, False)
+
     net_cfm = exhaust_cfm
 
     if net_cfm > 0:
+
+        print(exhaust_fans)
+        if exhaust_fans["n001_zone_38"].value == 2:
+            fan_12_inch_reset = (await turn_on_supply(fan_12_inch, net_cfm), True)
+            net_cfm -= fan_12_inch_reset[0]
+
         # if the damper is closed...
         if damper.value == 0:
             print("Opening the fresh air damper")
@@ -258,7 +276,6 @@ async def balance_cfm(exhaust_fans, supply_fans, exhaust_cfm, supply_cfm):
 
             # if the damper is fully open
             if time.time() - damper.time_off > 33:
-
                 net_cfm -= await turn_on_supply(fan_8_inch, net_cfm)
 
             else:
@@ -266,6 +283,8 @@ async def balance_cfm(exhaust_fans, supply_fans, exhaust_cfm, supply_cfm):
 
             # if more supply is needed...
             if net_cfm > 0:
+                # if fan_12_inch_reset[1]:
+
                 net_cfm -= await turn_on_supply(fan_12_inch, net_cfm)
             else:
                 await fan_12_inch.node.turn_off()
