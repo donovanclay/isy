@@ -122,8 +122,8 @@ async def main(url, username, password, tls_ver, events, node_servers):
             # if aqi_tracker.aqi_acceptable():
             #     isy.nodes["Craw"]
             # isy.nodes["Double Bathroom"].aux_properties["CLIHUM"].value
-
-            await humidity_controller.check_humidity()
+            if int(isy.variables.get_by_name("IAQ_on_off").status) == 1:
+                await humidity_controller.check_humidity()
 
             exhaust_fans_object.update()
             supply_fans_object.update()
