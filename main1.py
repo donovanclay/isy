@@ -109,12 +109,13 @@ async def main(url, username, password, tls_ver, events, node_servers):
         # isy.nodes["Crawlspace Exhaust Fan"].turn_on(5)
         while True:
             await asyncio.sleep(1)
-            await isy.nodes["Crawlspace Exhaust Fan"].turn_on(5)
-            await isy.nodes["Crawlspace Exhaust Fan"].turn_off()
-            await isy.nodes["Crawlspace Exhaust Fan"].turn_on()
+            # await isy.nodes["Crawlspace Exhaust Fan"].turn_on(5)
+            # await isy.nodes["Crawlspace Exhaust Fan"].turn_off()
+            # await isy.nodes["Crawlspace Exhaust Fan"].turn_on()
             # await isy.nodes["C"]
             # await isy.nodes["Craadwlspace Exhaust Fan"].turn_off()
-            print(isy.nodes["Crawlspace Exhaust Fan"].status)
+            # print(isy.nodes["Crawlspace Exhaust Fan"].status)
+            print(isy.nodes["Fresh Air Fan - 12 inch"].status)
 
             # print("N Bath Fan Status: " + str(isy.nodes["N Bath Fan"].status))
             # print("S Bath Fan Status: " + str(isy.nodes["S Bath Fan"].status))
