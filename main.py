@@ -304,7 +304,7 @@ async def balance_cfm(exhaust_fans, supply_fans, exhaust_cfm, supply_cfm):
 
 if __name__ == "__main__":
 
-    enable_logging(logging.DEBUG)
+    enable_logging(logging.WARNING)
 
     _LOGGER.info(
         "ISY URL: %s, username: %s",
