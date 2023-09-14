@@ -115,7 +115,8 @@ async def main(url, username, password, tls_ver, events, node_servers):
             # await isy.nodes["C"]
             # await isy.nodes["Craadwlspace Exhaust Fan"].turn_off()
             # print(isy.nodes["Crawlspace Exhaust Fan"].status)
-            print(isy.nodes["Fresh Air Fan - 12 inch"].status)
+            # print(isy.nodes["Fresh Air Fan - 12 inch"].status)
+            print(isy.nodes["Double Bathroom"].status)
 
             # print("N Bath Fan Status: " + str(isy.nodes["N Bath Fan"].status))
             # print("S Bath Fan Status: " + str(isy.nodes["S Bath Fan"].status))
