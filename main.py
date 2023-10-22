@@ -138,10 +138,10 @@ async def main(url, username, password, tls_ver, events, node_servers):
             if int(isy.variables.get_by_name("IAQ_on_off").status) == 1:
                 net_cfm = await balance_cfm(exhaust_fans, supply_fans, exhaust_cfm, supply_cfm)
 
-            for exhaust_fan in exhaust_fans:
-                fan = exhaust_fans[exhaust_fan]
-                print(fan)
-
+            # for exhaust_fan in exhaust_fans:
+            #     fan = exhaust_fans[exhaust_fan]
+            #     print(fan)
+            #
             for supply_fan in supply_fans:
                 fan = supply_fans[supply_fan]
                 print(fan)
@@ -186,6 +186,11 @@ async def get_exhaust_cfm(exhaust_fans):
 
         if type(fan.type) == int:
             ratio = 1 / fan.type
+            # print(fan.cfm)
+            # print(fan.name)
+            # print(fan.value)
+            # print(ratio)
+            # print(fan.cfm * fan.value * ratio)
             cfm += round(fan.cfm * fan.value * ratio)
             # if fan.name.__contains__("Ventahood"):
             #     cfm_ventahood += round(fan.cfm * fan.value * ratio)
@@ -256,20 +261,24 @@ async def balance_cfm(exhaust_fans, supply_fans, exhaust_cfm, supply_cfm):
 
     if net_cfm > 0:
 
-        print(exhaust_fans)
+        # print(exhaust_fans)
         if exhaust_fans["n001_zone_38"].value == 2:
             fan_12_inch_reset = (await turn_on_supply(fan_12_inch, net_cfm), True)
             net_cfm -= fan_12_inch_reset[0]
 
-        # if the damper is closed...
-        if damper.value == 0:
-            print("Opening the fresh air damper")
-            print("Status before: " + str(damper.node.status))
-            await damper.node.turn_on()
-            print("status after: " + str(damper.node.status))
+        if net_cfm > 0:
+            # if the damper is closed...
+            if damper.value == 0:
+                print("Opening the fresh air damper")
+                print("Status before: " + str(damper.node.status))
+                await damper.node.turn_on()
+                print("status after: " + str(damper.node.status))
 
-            damper.time_off = time.time()
-        net_cfm -= damper.cfm
+                damper.time_off = time.time()
+            net_cfm -= damper.cfm
+        elif damper.node.status != 0:
+            print("turning off damper")
+            await damper.node.turn_off()
 
         # if more supply is needed...
         if net_cfm > 0:
@@ -283,14 +292,15 @@ async def balance_cfm(exhaust_fans, supply_fans, exhaust_cfm, supply_cfm):
 
             # if more supply is needed...
             if net_cfm > 0:
-                # if fan_12_inch_reset[1]:
-
-                net_cfm -= await turn_on_supply(fan_12_inch, net_cfm)
-            else:
+                if fan_12_inch_reset[1]:
+                    net_cfm -= await turn_on_supply(fan_12_inch, net_cfm + fan_12_inch_reset[0])
+                else:
+                    net_cfm -= await turn_on_supply(fan_12_inch, net_cfm)
+            elif not fan_12_inch_reset[0]:
                 await fan_12_inch.node.turn_off()
 
         else:
-            if fan_12_inch.node.status != 0:
+            if fan_12_inch.node.status != 0 and not fan_12_inch_reset[1]:
                 await fan_12_inch.node.turn_off()
             if fan_8_inch.node.status != 0:
                 await fan_8_inch.node.turn_off()
